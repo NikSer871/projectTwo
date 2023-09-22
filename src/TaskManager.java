@@ -1,5 +1,7 @@
 public interface TaskManager {
 
+    void getPrioritizedTasks();
+
     void giveListOfTasks(int a);
 
     void deleteTasks(int a);

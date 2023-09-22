@@ -4,14 +4,22 @@ public class InMemoryTaskManager implements TaskManager {
     static HashMap<Integer, Task> dataTasks = new HashMap<>();
     static HashMap<Integer, Epic> dataEpics = new HashMap<>();
     static HashMap<Integer, Subtask> dataSubTasks = new HashMap<>();
+    static TreeSet<Task> sortedListOfTasks = new TreeSet<>();
 
 
     InMemoryHistoryManager inMemoryHistoryManager = new InMemoryHistoryManager();
-    static int idTasks = 0;
-    static int idEpics = 0;
-    static int idSubTasks = 0;
 
     static int id = 0;
+
+    @Override
+    public void getPrioritizedTasks() {
+       // System.out.println("ID  NAME TYPE");
+        /*for (Task task : sortedListOfTasks
+             ) {
+            System.out.printf("%d %s %s%n", task.id, task.name, task.type);
+        }*/
+        System.out.println(sortedListOfTasks);
+    }
 
     @Override
     public void giveListOfTasks(int a) {
@@ -105,6 +113,7 @@ public class InMemoryTaskManager implements TaskManager {
         a.id = id;
         a.type = NameOfTasks.TASK.toString();
         dataTasks.put(id++, a);
+        sortedListOfTasks.add(a);
     }
 
     @Override
@@ -133,7 +142,7 @@ public class InMemoryTaskManager implements TaskManager {
         a.epic.setDuration(a.epic.getDuration().plusHours(a.getDuration().getHour()).
                 plusMinutes(a.getDuration().getMinute()));
         a.epic.setEndFullTime(a.getEndTime());
-        System.out.println(a.epic.subtasks.size());
+        sortedListOfTasks.add(a);
 
     }
 
@@ -207,7 +216,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     public void text() {
         System.out.println("Please, pick one of the options");
-        System.out.println("1 - GIVE A LIST WITH ALL OF THE TASKS");
+        System.out.println("1 - GIVE A SORTED LIST WITH ALL OF THE TASKS AND SUBTASKS");
         System.out.println("2 - DELETE ALL TYPE OF TASKS");
         System.out.println("3 - GIVE TASK WITH USING ID");
         System.out.println("4 - CREATION ONE TYPE OF TASK");
@@ -246,10 +255,7 @@ public class InMemoryTaskManager implements TaskManager {
             text();
             switch (v.nextLine()) {
                 case "1" -> {
-                    System.out.println("Pick 1 - TASKS OR 2 - EPiCS OR 3 - SUBTASKS");
-                    a = v.nextInt();
-                    v.nextLine();
-                    giveListOfTasks(a);
+                    getPrioritizedTasks();
                 }
                 case "2" -> {
                     System.out.println("Pick 1 - TASKS OR 2 - EPiCS OR 3 - SUBTASKS");

@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAmount;
 
-public class Task {
+public class Task implements Comparable<Task>{
 
     private LocalTime duration;
     private LocalDateTime startTime;
@@ -52,6 +52,24 @@ public class Task {
 
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
+    }
+
+    @Override
+    public int compareTo(Task o) {
+        if (o.getStartTime() == null) {
+            return -1;
+        }
+        if (this.startTime.isAfter(o.getStartTime())) {
+            return 1;
+        } else if (this.startTime.isBefore(o.getStartTime())) {
+            return -1;
+        }
+        return 0;
+    }
+
+    @Override
+    public String toString() {
+        return "ID: " + id + " name " + name + " type: " + type;
     }
 }
 
