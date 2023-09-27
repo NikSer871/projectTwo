@@ -34,6 +34,14 @@ public class Task implements Comparable<Task>{
 
     }
 
+    Task(String name, String description, String action,LocalDateTime startTime, int hours, int minutes) {
+        this.name = name;
+        this.description = description;
+        this.action = action;
+        duration = LocalTime.of(hours, minutes);
+        setStartTime(startTime);
+    }
+
     public LocalDateTime getEndTime() {
         return startTime.plusHours(duration.getHour()).plusMinutes(duration.getMinute());
     }

@@ -8,6 +8,9 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     private static final String BEGINNING_OF_FILE = "id,type,name,status,description,startTime,duration, epic,";
 
+
+
+
     @Override
     public void deleteTasks(int a) {
         super.deleteTasks(a);
@@ -122,17 +125,17 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             while ((line != null && line.length() > 3)) {
                 String[] str = line.split(",");
                 String[] duration = str[7].split(":");
-                StringTokenizer tokenizer = new StringTokenizer(str[6], "-:T");
+                StringTokenizer startTime = new StringTokenizer(str[6], "-:T");
                 switch (str[1]) {
                     case "TASK" -> {
                         id = Integer.parseInt(str[0]);
-                        super.createTask(new Task(str[2], str[5], str[4], Integer.parseInt(duration[0]),
+                        LocalDateTime startT = LocalDateTime.of(
+                                Integer.parseInt(startTime.nextToken()), Integer.parseInt(startTime.nextToken()),
+                                Integer.parseInt(startTime.nextToken()), Integer.parseInt(startTime.nextToken()),
+                                Integer.parseInt(startTime.nextToken()));
+                        super.createTask(new Task(str[2], str[5], str[4], startT, Integer.parseInt(duration[0]),
                                 Integer.parseInt(duration[1])));
                         dataTasks.get(id - 1).status = str[3];
-                        dataTasks.get(id - 1).setStartTime(LocalDateTime.of(
-                                Integer.parseInt(tokenizer.nextToken()), Integer.parseInt(tokenizer.nextToken()),
-                                Integer.parseInt(tokenizer.nextToken()), Integer.parseInt(tokenizer.nextToken()),
-                                Integer.parseInt(tokenizer.nextToken())));
                         tasks.put(id - 1, dataTasks.get(id - 1));
                     }
                     case "EPIC" -> {
@@ -140,27 +143,26 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                         super.createEpic(new Epic(str[2], str[5], str[4]));
                         dataEpics.get(id - 1).status = str[3];
                         dataTasks.get(id - 1).setStartTime(LocalDateTime.of(
-                                Integer.parseInt(tokenizer.nextToken()), Integer.parseInt(tokenizer.nextToken()),
-                                Integer.parseInt(tokenizer.nextToken()), Integer.parseInt(tokenizer.nextToken()),
-                                Integer.parseInt(tokenizer.nextToken())));
+                                Integer.parseInt(startTime.nextToken()), Integer.parseInt(startTime.nextToken()),
+                                Integer.parseInt(startTime.nextToken()), Integer.parseInt(startTime.nextToken()),
+                                Integer.parseInt(startTime.nextToken())));
                         tasks.put(id - 1, dataEpics.get(id - 1));
                     }
                     case "SUBTASK" -> {
                         id = Integer.parseInt(str[0]);
-                        super.createSubTask(new Subtask(str[2], str[5], str[4], Integer.parseInt(duration[0]),
+                        LocalDateTime startT = LocalDateTime.of(
+                                Integer.parseInt(startTime.nextToken()), Integer.parseInt(startTime.nextToken()),
+                                Integer.parseInt(startTime.nextToken()), Integer.parseInt(startTime.nextToken()),
+                                Integer.parseInt(startTime.nextToken()));
+                        super.createSubTask(new Subtask(str[2], str[5], str[4], startT, Integer.parseInt(duration[0]),
                                 Integer.parseInt(duration[1])), Integer.parseInt(str[8]));
                         dataSubTasks.get(id - 1).status = str[3];
-                        dataTasks.get(id - 1).setStartTime(LocalDateTime.of(
-                                Integer.parseInt(tokenizer.nextToken()), Integer.parseInt(tokenizer.nextToken()),
-                                Integer.parseInt(tokenizer.nextToken()), Integer.parseInt(tokenizer.nextToken()),
-                                Integer.parseInt(tokenizer.nextToken())));
                         tasks.put(id - 1, dataSubTasks.get(id - 1));
                     }
                 }
 
                 line = reader.readLine();
             }
-            id++;
             if ((line = reader.readLine()) != null) {
                 List<Integer> listOfHistory = fromStringHistory(line);
                 for (int i = listOfHistory.size() - 1; i >= 0; i--) {

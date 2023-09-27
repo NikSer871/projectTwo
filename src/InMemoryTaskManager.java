@@ -1,24 +1,71 @@
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
-    static HashMap<Integer, Task> dataTasks = new HashMap<>();
-    static HashMap<Integer, Epic> dataEpics = new HashMap<>();
-    static HashMap<Integer, Subtask> dataSubTasks = new HashMap<>();
-    static TreeSet<Task> sortedListOfTasks = new TreeSet<>();
+    static HashMap<Integer, Task> dataTasks;
+    static HashMap<Integer, Epic> dataEpics;
+    static HashMap<Integer, Subtask> dataSubTasks;
+    static HashMap<LocalDateTime, Boolean> intersections;
+    static TreeSet<Task> sortedListOfTasks;
+
+    static LocalDateTime dateTime;
 
 
     InMemoryHistoryManager inMemoryHistoryManager = new InMemoryHistoryManager();
 
-    static int id = 0;
+    static int id;
+
+    static {
+        dataTasks = new HashMap<>();
+        dataEpics = new HashMap<>();
+        dataSubTasks = new HashMap<>();
+        intersections = new HashMap<>();
+        sortedListOfTasks = new TreeSet<>();
+        dateTime = LocalDateTime.of(2023, Month.SEPTEMBER, 1, 0, 0);
+        id = 0;
+    }
+    static {
+        while (dateTime.isBefore(LocalDateTime.of(2024, Month.JANUARY, 1, 0, 0))) {
+            intersections.put(dateTime, false);
+            dateTime = dateTime.plusMinutes(15);
+        }
+    }
+
 
     @Override
     public void getPrioritizedTasks() {
-       // System.out.println("ID  NAME TYPE");
-        /*for (Task task : sortedListOfTasks
-             ) {
-            System.out.printf("%d %s %s%n", task.id, task.name, task.type);
-        }*/
         System.out.println(sortedListOfTasks);
+    }
+
+    public int checkIntersections(Task task, int condition) {
+        int minutes = task.getDuration().getMinute() + task.getDuration().getHour() * 60;
+        int partOfFifteen = (minutes / 15) + 1;
+        LocalDateTime checkTime = LocalDateTime.of(task.getStartTime().getYear(),
+                task.getStartTime().getMonth(), task.getStartTime().getDayOfMonth(), task.getStartTime().getHour(),
+                task.getStartTime().getMinute() - task.getStartTime().getMinute() % 15);
+        if (condition == 1) {
+            for (int i = 0; i < partOfFifteen; i++) {
+                if (intersections.get(checkTime)) {
+                    System.out.println("Ваш временной интервал задел чужие задачи((((((((((((((((");
+                    System.out.println("Создание задачи отклонено!!!!!!!!!");
+                    return -1;
+                } else {
+                    intersections.put(checkTime, true);
+                }
+                checkTime = checkTime.plusMinutes(15);
+            }
+        } else {
+            for (int i = 0; i < partOfFifteen; i++) {
+                if (intersections.get(checkTime)) {
+                    intersections.put(checkTime, false);
+                }
+                checkTime = checkTime.plusMinutes(15);
+            }
+        }
+        return 0;
+
     }
 
     @Override
@@ -109,6 +156,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void createTask(Task a) {
+        if (checkIntersections(a, 1) == -1) {
+            return;
+        }
         a.status = Conditions.NEW.toString();
         a.id = id;
         a.type = NameOfTasks.TASK.toString();
@@ -126,6 +176,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void createSubTask(Subtask a, int i) {
+        if (checkIntersections(a, 1) == -1) {
+            return;
+        }
         a.status = Conditions.NEW.toString();
         a.id = id;
         a.type = NameOfTasks.SUBTASK.toString();
@@ -148,6 +201,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateTask(Task a) {
+        checkIntersections(a, 0);
         a.action = Conditions.DONE.toString();
         dataTasks.put(a.id, a);
     }
@@ -167,6 +221,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void updateSubTask(Subtask a) {
+        checkIntersections(a, 0);
         a.action = Conditions.DONE.toString();
         dataSubTasks.put(a.id, a);
         a.epic.subtasks.remove(a);
@@ -275,8 +330,14 @@ public class InMemoryTaskManager implements TaskManager {
                     getTask(a, id);
                 }
                 case "4" -> {
-                    int hours;
-                    int minutes;
+                    int hours = 0;
+                    int minutes = 0;
+                    int year = 0;
+                    int month = 0;
+                    int day = 0;
+                    int durHours = 0;
+                    int durMinutes = 0;
+                    LocalDateTime startTime = null;
                     String name;
                     String description;
                     String action;
@@ -289,21 +350,40 @@ public class InMemoryTaskManager implements TaskManager {
                     description = v.nextLine();
                     System.out.println("action: ");
                     action = v.nextLine();
-                    System.out.println("Give me information about task's duration (hours, minutes"); // WARMING!!! FOR EPIC
-                    System.out.println("--------------------Hours--------------------");
-                    hours = v.nextInt();
-                    v.nextLine();
-                    System.out.println("--------------------Minutes--------------------");
-                    minutes = v.nextInt();
+                    if (a != 2) {
+                        System.out.println("Give me information about task's startTime (years, month, day, hours, minutes), except Epics"); // WARMING!!! FOR EPIC
+                        System.out.println("--------------------Year--------------------");
+                        year = v.nextInt();
+                        v.nextLine();
+                        System.out.println("--------------------Month--------------------");
+                        month = v.nextInt();
+                        v.nextLine();
+                        System.out.println("--------------------Day--------------------");
+                        day = v.nextInt();
+                        v.nextLine();
+                        System.out.println("--------------------Hours--------------------");
+                        hours = v.nextInt();
+                        v.nextLine();
+                        System.out.println("--------------------Minutes--------------------");
+                        minutes = v.nextInt();
+                        startTime = LocalDateTime.of(year, month, day, hours, minutes);
+                        System.out.println("Give me information about task's startTime (years, month, day, hours, minutes)");
+                        System.out.println("--------------------Hours--------------------");
+                        durHours = v.nextInt();
+                        v.nextLine();
+                        System.out.println("--------------------Minutes--------------------");
+                        durMinutes = v.nextInt();
+                    }
+
                     switch (a) {
-                        case 1 -> createTask(new Task(name, description, action, hours, minutes));
+                        case 1 -> createTask(new Task(name, description, action, startTime, durHours, durMinutes));
                         case 2 -> createEpic(new Epic(name, description, action));
                         case 3 -> {
                             System.out.println("PICK EPIC");
                             giveListOfTasks(2);
                             id = v.nextInt();
                             v.nextLine();
-                            createSubTask(new Subtask(name, description, action, hours, minutes), id);
+                            createSubTask(new Subtask(name, description, action, startTime, durHours, durMinutes), id);
                         }
                     }
                 }
