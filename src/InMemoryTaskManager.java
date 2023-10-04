@@ -182,7 +182,6 @@ public class InMemoryTaskManager implements TaskManager {
         a.status = Conditions.NEW.toString();
         a.id = id;
         a.type = NameOfTasks.SUBTASK.toString();
-        dataEpics.get(i).subtasks.add(a);
         a.epic = dataEpics.get(i);
         dataSubTasks.put(id++, a);
         if (a.epic.subtasks.size() == 0) {
@@ -192,6 +191,7 @@ public class InMemoryTaskManager implements TaskManager {
         if (a.epic.getStartTime().isAfter(a.getStartTime())) {
             a.epic.setStartTime(a.getStartTime());
         }
+        dataEpics.get(i).subtasks.add(a);
         a.epic.setDuration(a.epic.getDuration().plusHours(a.getDuration().getHour()).
                 plusMinutes(a.getDuration().getMinute()));
         a.epic.setEndFullTime(a.getEndTime());

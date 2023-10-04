@@ -10,4 +10,9 @@ public class Subtask extends Task {
     Subtask(String name, String description, String action, LocalDateTime startTime, int hours, int minutes) {
         super(name, description, action, startTime, hours, minutes);
     }
+
+    Subtask(String status, int id) {
+        super();
+        this.id = id;
+    }
 }
