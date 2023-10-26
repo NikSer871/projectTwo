@@ -1,3 +1,5 @@
+package tasks;
+
 public interface TaskManager {
 
     void getPrioritizedTasks();

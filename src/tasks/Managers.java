@@ -1,9 +1,13 @@
+package tasks;
+
 import java.util.List;
 
 public class Managers {
-    /*public TaskManager getDefault() {
-        return new TaskManager();
-    }*/
+    public static FileBackedTasksManager getDefault() {
+        return new FileBackedTasksManager(){
+
+        };
+    }
 
     static InMemoryHistoryManager getDefaultHistory() {
         return new InMemoryHistoryManager() {
