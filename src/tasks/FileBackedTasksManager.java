@@ -1,12 +1,15 @@
 package tasks;
 
+import com.sun.net.httpserver.HttpServer;
+import server.HttpTaskServer;
+
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
 
-    private static final String PATH_OF_FILE = "C:\\Users\\nikul\\IdeaProjects\\project_two\\src\\manager.txt";
+    public static final String PATH_OF_FILE = "C:\\Users\\nikul\\IdeaProjects\\project_two\\src\\manager.txt";
 
     private static final String BEGINNING_OF_FILE = "id,type,name,status,description,startTime,duration, epic,";
 
@@ -64,10 +67,13 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
 
     @Override
-    public void getTask(int a, int id) {
-        super.getTask(a, id);
+    public Task getTask(int a, int id) {
+        Task task = super.getTask(a, id);
         save();
+        return task;
     }
+
+
 
     String getStrOfTasks() {
         StringBuilder builder = new StringBuilder();
@@ -118,7 +124,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         return stringBuilder.toString();
     }
 
-    FileBackedTasksManager loadFromFile(File file) {
+    public FileBackedTasksManager loadFromFile(File file) {
         String line;
         HashMap<Integer, Task> tasks = new HashMap<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
@@ -217,8 +223,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     public static void main(String[] args) {
-        FileBackedTasksManager fileBackedTasksManager = new FileBackedTasksManager();
-        fileBackedTasksManager.loadFromFile(new File(PATH_OF_FILE)).menu();
+        FileBackedTasksManager manager = new FileBackedTasksManager().loadFromFile(new File(PATH_OF_FILE));
+        try {
+            HttpServer server = HttpTaskServer.createServer();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

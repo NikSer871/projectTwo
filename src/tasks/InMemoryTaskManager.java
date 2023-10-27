@@ -36,8 +36,8 @@ public class InMemoryTaskManager implements TaskManager {
 
 
     @Override
-    public void getPrioritizedTasks() {
-        System.out.println(sortedListOfTasks);
+    public String getPrioritizedTasks() {
+        return String.valueOf(sortedListOfTasks);
     }
 
     public int checkIntersections(Task task, int condition) {
@@ -70,31 +70,33 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void giveListOfTasks(int a) {
-        System.out.println("|  id          name    ");
+    public String giveListOfTasks(int a) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("|  id          name    " + "\n");
         switch (a) {
             case 1:
                 for (Map.Entry<Integer, Task> str : dataTasks.entrySet()) {
-                    System.out.print("| ");
-                    System.out.print(str.getKey() + " " + str.getValue().name);
-                    System.out.println(" |");
+                    builder.append("| ");
+                    builder.append(str.getKey()).append(" ").append(str.getValue().name);
+                    builder.append(" |").append("\n");
                 }
                 break;
             case 2:
                 for (Map.Entry<Integer, Epic> str : dataEpics.entrySet()) {
-                    System.out.print("| ");
-                    System.out.print(str.getKey() + " " + str.getValue().name);
-                    System.out.println(" |");
+                    builder.append("| ");
+                    builder.append(str.getKey()).append(" ").append(str.getValue().name);
+                    builder.append(" |").append("\n");
                 }
                 break;
             case 3:
                 for (Map.Entry<Integer, Subtask> str : dataSubTasks.entrySet()) {
-                    System.out.print("| ");
-                    System.out.print(str.getKey() + " " + str.getValue().name);
-                    System.out.println(" |");
+                    builder.append("| ");
+                    builder.append(str.getKey()).append(" ").append(str.getValue().name);
+                    builder.append(" |").append("\n");
                 }
                 break;
         }
+        return builder.toString();
     }
 
     @Override
@@ -125,33 +127,35 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void getTask(int a, int id) {
+    public Task getTask(int a, int id) {
         switch (a) {
             case 1 -> {
                 if (!dataTasks.containsKey(id)) {
                     System.out.println("Нет задачи с таким идентивикатором!!!");
                     break;
                 }
-                System.out.println(dataTasks.get(id).name);
                 inMemoryHistoryManager.addTask(dataTasks.get(id));
+                return dataTasks.get(id);
+
             }
             case 2 -> {
                 if (!dataEpics.containsKey(id)) {
                     System.out.println("Нет задачи с таким идентивикатором!!!");
                     break;
                 }
-                System.out.println(dataEpics.get(id).name);
                 inMemoryHistoryManager.addTask(dataEpics.get(id));
+                return dataEpics.get(id);
             }
             case 3 -> {
                 if (!dataSubTasks.containsKey(id)) {
                     System.out.println("Нет задачи с таким идентивикатором!!!");
                     break;
                 }
-                System.out.println(dataSubTasks.get(id).name);
                 inMemoryHistoryManager.addTask(dataSubTasks.get(id));
+                return dataSubTasks.get(id);
             }
         }
+        return null;
     }
 
 
@@ -284,15 +288,17 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void giveListSubTasks(Epic epic) {
+    public String giveListSubTasks(Epic epic) {
+        StringBuilder builder = new StringBuilder();
         for (int i = 0; i < epic.subtasks.size(); i++) {
-            System.out.println(epic.subtasks.get(i).name);
-            System.out.println("+++++++++++++++++++");
+            builder.append(epic.subtasks.get(i).name).append("\n");
+            //System.out.println("+++++++++++++++++++");
         }
+        return builder.toString();
     }
 
 
-    public void menu() {
+    /*public void menu() {
         String text;
         int a;
         int id;
@@ -437,7 +443,7 @@ public class InMemoryTaskManager implements TaskManager {
         }
         System.exit(0);
 
-    }
+    }*/
 
     public static void printHistory(List<Task> tasks) {
         for (Task task : tasks

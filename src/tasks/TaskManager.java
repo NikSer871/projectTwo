@@ -2,13 +2,13 @@ package tasks;
 
 public interface TaskManager {
 
-    void getPrioritizedTasks();
+    String getPrioritizedTasks();
 
-    void giveListOfTasks(int a);
+    String giveListOfTasks(int a);
 
     void deleteTasks(int a);
 
-    void getTask(int a, int id);
+    Task getTask(int a, int id);
 
     void createTask(Task a);
 
@@ -24,6 +24,6 @@ public interface TaskManager {
 
     void deleteTask(int a, int id);
 
-    void giveListSubTasks(Epic epic);
+    String giveListSubTasks(Epic epic);
 
 }
