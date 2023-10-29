@@ -17,7 +17,7 @@ class InMemoryTaskManagerTest {
         manager.createTask(task);
         final int id = InMemoryTaskManager.id;
 
-        final Task savedTask = InMemoryTaskManager.dataTasks.get(id - 1);
+        final Task savedTask = InMemoryTaskManager.getDataTasks().get(id - 1);
 
         assertNotNull(savedTask, "Задача не найдена!");
         assertEquals(task, savedTask, "Задачи не совпадают!");

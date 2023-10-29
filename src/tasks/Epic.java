@@ -4,14 +4,14 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Epic extends Task {
-    ArrayList<Subtask> subtasks;
+    private ArrayList<Subtask> subtasks;
 
     private LocalDateTime endFullTime;
 
     Epic(String name, String description, String action) {
-        super.name = name;
-        super.description = description;
-        super.action = action;
+        super.setName(name);
+        super.setDescription(description);
+        super.setAction(action);
         subtasks = new ArrayList<>();
     }
 
@@ -22,5 +22,13 @@ public class Epic extends Task {
 
     public void setEndFullTime(LocalDateTime endTime) {
         this.endFullTime = endTime;
+    }
+
+    public ArrayList<Subtask> getSubtasks() {
+        return subtasks;
+    }
+
+    public void setSubtasks(ArrayList<Subtask> subtasks) {
+        this.subtasks = subtasks;
     }
 }

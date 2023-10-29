@@ -14,6 +14,6 @@ public class Subtask extends Task {
 
     Subtask(String status, int id) {
         super();
-        this.id = id;
+        this.setId(id);
     }
 }

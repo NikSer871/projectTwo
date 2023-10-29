@@ -12,7 +12,7 @@ public class EpicTest {
 
     @Test
     void statusEpicChange() {
-        epic.status = Conditions.NEW.toString();
+        epic.setStatus(Conditions.NEW.toString());
 
         manager.createEpic(epic);
         LocalDateTime start1 = LocalDateTime.of(2023, 11, 1, 3, 15);
@@ -21,17 +21,17 @@ public class EpicTest {
         Subtask subtask2 = new Subtask("Nsd", "sdsd", "SdSD", start2, 5, 3);
 
 
-        assertEquals(0, epic.subtasks.size(), "Epic содержит невидимые подзадачи!");
+        assertEquals(0, epic.getSubtasks().size(), "Epic содержит невидимые подзадачи!");
         manager.createSubTask(subtask1, 0);
         manager.createSubTask(subtask2, 0);
 
-        assertEquals("NEW", epic.status, "СТАТУС НЕ NEW!!!");
+        assertEquals("NEW", epic.getStatus(), "СТАТУС НЕ NEW!!!");
 
         manager.updateSubTask(subtask1);
-        assertEquals("IN_PROGRESS", epic.status, "СТАТУС НЕ IN PROGRESS!!!");
+        assertEquals("IN_PROGRESS", epic.getStatus(), "СТАТУС НЕ IN PROGRESS!!!");
 
         manager.updateSubTask(subtask2);
-        assertEquals("DONE", epic.status, "СТАТУС НЕ DONE!!!");
+        assertEquals("DONE", epic.getStatus(), "СТАТУС НЕ DONE!!!");
 
 
     }

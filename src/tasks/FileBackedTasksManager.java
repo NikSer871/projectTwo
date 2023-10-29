@@ -4,12 +4,17 @@ import com.sun.net.httpserver.HttpServer;
 import server.HttpTaskServer;
 
 import java.io.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 
 public class FileBackedTasksManager extends InMemoryTaskManager {
 
-    public static final String PATH_OF_FILE = "C:\\Users\\nikul\\IdeaProjects\\project_two\\src\\manager.txt";
+    private static final String PATH_OF_FILE = "C:\\Users\\nikul\\IdeaProjects\\project_two\\src\\manager.txt";
 
     private static final String BEGINNING_OF_FILE = "id,type,name,status,description,startTime,duration, epic,";
 
@@ -77,15 +82,15 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     String getStrOfTasks() {
         StringBuilder builder = new StringBuilder();
-        for (Map.Entry<Integer, Task> task : dataTasks.entrySet()
+        for (Map.Entry<Integer, Task> task : getDataTasks().entrySet()
         ) {
             builder.append(toString(task.getValue())).append("\n");
         }
-        for (Map.Entry<Integer, Epic> task : dataEpics.entrySet()
+        for (Map.Entry<Integer, Epic> task : getDataEpics().entrySet()
         ) {
             builder.append(toString(task.getValue())).append("\n");
         }
-        for (Map.Entry<Integer, Subtask> task : dataSubTasks.entrySet()
+        for (Map.Entry<Integer, Subtask> task : getDataSubTasks().entrySet()
         ) {
             builder.append(toString(task.getValue())).append("\n");
         }
@@ -94,7 +99,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     void save() {
-        String history = FileBackedTasksManager.toString(inMemoryHistoryManager);
+        String history = FileBackedTasksManager.toString(getInMemoryHistoryManager());
         StringBuilder builder = new StringBuilder();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(PATH_OF_FILE))) {
             builder.append(BEGINNING_OF_FILE).append("\n");
@@ -112,12 +117,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
     String toString(Task task) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(task.id).append(",").append(task.type).append(",").append(task.name).append(",")
-                .append(task.status).append(",").append(task.action).append(",").append(task.description).append(",")
+        stringBuilder.append(task.getId()).append(",").append(task.getType()).append(",").append(task.getName()).append(",")
+                .append(task.getStatus()).append(",").append(task.getAction()).append(",").append(task.getDescription()).append(",")
                 .append(task.getStartTime()).append(",").append(task.getDuration()).append(",");
 
-        if (task.type.equals(NameOfTasks.SUBTASK.toString())) {
-            stringBuilder.append(task.epic.id);
+        if (task.getType().equals(NameOfTasks.SUBTASK.toString())) {
+            stringBuilder.append(task.getEpic().getId());
         } else {
             stringBuilder.append("null");
         }
@@ -143,18 +148,18 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                                 Integer.parseInt(startTime.nextToken()));
                         super.createTask(new Task(str[2], str[5], str[4], startT, Integer.parseInt(duration[0]),
                                 Integer.parseInt(duration[1])));
-                        dataTasks.get(id - 1).status = str[3];
-                        tasks.put(id - 1, dataTasks.get(id - 1));
+                        getDataTasks().get(id - 1).setStatus(str[3]);
+                        tasks.put(id - 1, getDataTasks().get(id - 1));
                     }
                     case "EPIC" -> {
                         id = Integer.parseInt(str[0]);
                         super.createEpic(new Epic(str[2], str[5], str[4]));
-                        dataEpics.get(id - 1).status = str[3];
-                        dataTasks.get(id - 1).setStartTime(LocalDateTime.of(
+                        getDataEpics().get(id - 1).setStatus(str[3]);
+                        getDataTasks().get(id - 1).setStartTime(LocalDateTime.of(
                                 Integer.parseInt(startTime.nextToken()), Integer.parseInt(startTime.nextToken()),
                                 Integer.parseInt(startTime.nextToken()), Integer.parseInt(startTime.nextToken()),
                                 Integer.parseInt(startTime.nextToken())));
-                        tasks.put(id - 1, dataEpics.get(id - 1));
+                        tasks.put(id - 1, getDataEpics().get(id - 1));
                     }
                     case "SUBTASK" -> {
                         id = Integer.parseInt(str[0]);
@@ -164,8 +169,8 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                                 Integer.parseInt(startTime.nextToken()));
                         super.createSubTask(new Subtask(str[2], str[5], str[4], startT, Integer.parseInt(duration[0]),
                                 Integer.parseInt(duration[1])), Integer.parseInt(str[8]));
-                        dataSubTasks.get(id - 1).status = str[3];
-                        tasks.put(id - 1, dataSubTasks.get(id - 1));
+                        getDataSubTasks().get(id - 1).setStatus(str[3]);
+                        tasks.put(id - 1, getDataSubTasks().get(id - 1));
                     }
                 }
 
@@ -174,7 +179,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             if ((line = reader.readLine()) != null) {
                 List<Integer> listOfHistory = fromStringHistory(line);
                 for (int i = listOfHistory.size() - 1; i >= 0; i--) {
-                    inMemoryHistoryManager.addTask(tasks.get(listOfHistory.get(i)));
+                    getInMemoryHistoryManager().addTask(tasks.get(listOfHistory.get(i)));
                 }
             }
         } catch (IOException e) {
@@ -203,7 +208,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
         for (Task task :
                 tasks
         ) {
-            stringBuilder.append(task.id).append(",");
+            stringBuilder.append(task.getId()).append(",");
         }
         if (stringBuilder.length() != 0) {
             stringBuilder.deleteCharAt(stringBuilder.length() - 1);
@@ -223,10 +228,25 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
     }
 
     public static void main(String[] args) {
-        FileBackedTasksManager manager = new FileBackedTasksManager().loadFromFile(new File(PATH_OF_FILE));
+        HttpTaskServer.getManager().loadFromFile(new File(PATH_OF_FILE));
         try {
             HttpServer server = HttpTaskServer.createServer();
-        } catch (IOException e) {
+            server.start();
+
+            HttpClient client = HttpClient.newHttpClient();
+            URI url = URI.create("http://localhost:8080/tasks/task/");
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(url)
+                    .GET()
+                    .build();
+
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            System.out.println(response.body()); // ¬ã¬Õ¬Ö¬Ý¬Ñ¬ä¬î JSON ¬à¬ä¬Ó¬Ö¬ä
+
+
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
 

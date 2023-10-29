@@ -7,16 +7,16 @@ public class Task implements Comparable<Task>{
 
     private LocalTime duration;
     private LocalDateTime startTime;
-    String name;
-    String description;
+    private String name;
+    private String description;
 
-    String status;
-    String action;
+    private String status;
+    private String action;
 
-    String type;
+    private String type;
 
-    Epic epic;
-    int id;
+    private Epic epic;
+    private int id;
 
     Task() {
 
@@ -77,6 +77,62 @@ public class Task implements Comparable<Task>{
     @Override
     public String toString() {
         return "ID: " + id + " name " + name + " type: " + type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Epic getEpic() {
+        return epic;
+    }
+
+    public void setEpic(Epic epic) {
+        this.epic = epic;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
 
