@@ -233,7 +233,7 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
             HttpServer server = HttpTaskServer.createServer();
             server.start();
 
-            HttpClient client = HttpClient.newHttpClient();
+            /*HttpClient client = HttpClient.newHttpClient();
             URI url = URI.create("http://localhost:8080/tasks/task/");
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(url)
@@ -243,10 +243,10 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            System.out.println(response.body()); // ¬ã¬Õ¬Ö¬Ý¬Ñ¬ä¬î JSON ¬à¬ä¬Ó¬Ö¬ä
+            System.out.println(response.body()); // ¬ã¬Õ¬Ö¬Ý¬Ñ¬ä¬î JSON ¬à¬ä¬Ó¬Ö¬ä*/
 
 
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

@@ -8,7 +8,7 @@ public class Epic extends Task {
 
     private LocalDateTime endFullTime;
 
-    Epic(String name, String description, String action) {
+    public Epic(String name, String description, String action) {
         super.setName(name);
         super.setDescription(description);
         super.setAction(action);

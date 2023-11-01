@@ -33,7 +33,7 @@ public class Task implements Comparable<Task>{
 
     }
 
-    Task(String name, String description, String action, LocalDateTime startTime, int hours, int minutes) {
+    public Task(String name, String description, String action, LocalDateTime startTime, int hours, int minutes) {
         this.name = name;
         this.description = description;
         this.action = action;

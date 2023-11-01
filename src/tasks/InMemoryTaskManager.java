@@ -14,7 +14,7 @@ public class InMemoryTaskManager implements TaskManager {
     private static LocalDateTime dateTime;
 
 
-    private InMemoryHistoryManager inMemoryHistoryManager = new InMemoryHistoryManager();
+    private final InMemoryHistoryManager inMemoryHistoryManager = new InMemoryHistoryManager();
 
     static int id;
 
