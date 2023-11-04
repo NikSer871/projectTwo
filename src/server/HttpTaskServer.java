@@ -7,20 +7,13 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import tasks.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Type;
+import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLOutput;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.logging.Handler;
 
 public class HttpTaskServer {
     private static final int PORT = 8080;
@@ -72,44 +65,122 @@ public class HttpTaskServer {
                 getHistory(exchange);
                 return;
             }
-            System.out.println(Arrays.toString(splitStrings));
             if (isGetTaskById(splitStrings, method) && isIdRequest(exchange)) {
                 exchange.sendResponseHeaders(200, 0);
-                getTaskById(exchange, getId(exchange) );
+                getAnyTaskById(exchange, getId(exchange), 1);
                 return;
             } else if (isGetEpicById(splitStrings, method) && isIdRequest(exchange)) {
+                getAnyTaskById(exchange, getId(exchange), 2);
                 exchange.sendResponseHeaders(200, 0);
-                getEpicById(exchange, getId(exchange));
                 return;
             } else if (isGetSubtaskById(splitStrings, method) && isIdRequest(exchange)) {
                 exchange.sendResponseHeaders(200, 0);
-                getSubtaskById(exchange, getId(exchange));
+                getAnyTaskById(exchange, getId(exchange), 3);
                 return;
             }
 
             if (isCreateTask(splitStrings, method)) {
+                exchange.sendResponseHeaders(200, 0);
                 createTask(exchange);
                 return;
             } else if (isCreateEpic(splitStrings, method)) {
+                exchange.sendResponseHeaders(200, 0);
                 createEpic(exchange);
                 return;
             } else if (isCreateSubtask(splitStrings, method)) {
+                System.out.println("skss");
+                exchange.sendResponseHeaders(200, 0);
                 createSubtask(exchange);
                 return;
             }
 
+            if (isDeleteTaskById(splitStrings, method) && isIdRequest(exchange)) {
+                exchange.sendResponseHeaders(200, 0);
+                deleteAnyTaskByID(exchange, getId(exchange), 1);
+                return;
+            } else if (isDeleteEpicById(splitStrings, method) && isIdRequest(exchange)) {
+                exchange.sendResponseHeaders(200, 0);
+                deleteAnyTaskByID(exchange, getId(exchange), 2);
+                return;
+            } else if (isDeleteSubtaskById(splitStrings, method) && isIdRequest(exchange)) {
+                exchange.sendResponseHeaders(200, 0);
+                deleteAnyTaskByID(exchange, getId(exchange), 3);
+                return;
+            }
 
+
+
+        }
+
+        boolean isNotExistenceOfTaskInHashMap(int id, int condition) {
+            switch (condition) {
+                case 1 -> {
+                    if (InMemoryTaskManager.getDataTasks().containsKey(id)) {
+                        return false;
+                    }
+                    return true;
+                }
+                case 2 -> {
+                    if (InMemoryTaskManager.getDataEpics().containsKey(id)) {
+                        return false;
+                    }
+                    return true;
+                }
+                case 3 -> {
+                    if (InMemoryTaskManager.getDataSubTasks().containsKey(id)) {
+                        return false;
+                    }
+                    return true;
+                }
+            }
+            return true;
+        }
+
+        private void deleteAnyTaskByID(HttpExchange exchange, int id, int condition) {
+            String line;
+            if (isNotExistenceOfTaskInHashMap(id, condition)) {
+                line = String.format("Such task with id = %d doesn't exist", id);
+            } else {
+                System.out.println("sdsdsd");
+                manager.deleteTask(condition, id);
+                System.out.println("sdsdsd");
+                if (isNotExistenceOfTaskInHashMap(id, condition)) {
+                    line = "Task deleted!";
+                } else {
+                    line = "ERROR!!!";
+                }
+            }
+
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(line.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private String getJSONString(HttpExchange exchange) {
+            String line;
+            StringBuilder builder = new StringBuilder();
+            try (InputStream stream = exchange.getRequestBody();InputStreamReader reader = new InputStreamReader(stream)
+                 ;BufferedReader bufferedReader = new BufferedReader(reader)) {
+                while ((line = bufferedReader.readLine()) != null) {
+                    builder.append(line);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return builder.toString();
         }
 
         private void createTask(HttpExchange exchange) {
             String line;
-            JsonElement element = JsonParser.parseString(exchange.getRequestBody().toString());
+            JsonElement element = JsonParser.parseString(getJSONString(exchange));
             JsonObject jsonObject = element.getAsJsonObject();
             int checkpoint = createStandardTask(jsonObject, "TASK");
             if (checkpoint == -1) {
-                line = "Данный промежуток времени занят!!!";
+                line = "This intersection isn't empty!!!";
             } else {
-                line = "Задача создана!";
+                line = "Task created!";
             }
 
             try (OutputStream os = exchange.getResponseBody()) {
@@ -123,13 +194,13 @@ public class HttpTaskServer {
 
         private void createSubtask(HttpExchange exchange) {
             String line;
-            JsonElement element = JsonParser.parseString(exchange.getRequestBody().toString());
+            JsonElement element = JsonParser.parseString(getJSONString(exchange));
             JsonObject jsonObject = element.getAsJsonObject();
             int checkpoint = createStandardTask(jsonObject, "SUBTASK");
             if (checkpoint == -1) {
-                line = "Данный промежуток времени занят!!!";
+                line = "This intersection isn't empty!!!";
             } else {
-                line = "Задача создана!";
+                line = "Subtask created!";
             }
 
             try (OutputStream os = exchange.getResponseBody()) {
@@ -142,8 +213,9 @@ public class HttpTaskServer {
         }
 
         private void createEpic(HttpExchange exchange) {
-            String line = "Epic создан!!!";
-            JsonElement element = JsonParser.parseString(exchange.getRequestBody().toString());
+            System.out.println("EPIC!!!!");
+            String line = "Epic created!!!";
+            JsonElement element = JsonParser.parseString(getJSONString(exchange));
             JsonObject jsonObject = element.getAsJsonObject();
             createStandardEpic(jsonObject);
             try (OutputStream os = exchange.getResponseBody()) {
@@ -173,15 +245,18 @@ public class HttpTaskServer {
             action = object.get("action").getAsString();
             hours = object.get("hours").getAsInt();
             minutes = object.get("minutes").getAsInt();
-            year = object.get("year").getAsInt();
+            year = object.get("years").getAsInt();
             month = object.get("month").getAsInt();
             day = object.get("day").getAsInt();
             durHours = object.get("durHours").getAsInt();
             durMinutes = object.get("durMinutes").getAsInt();
+            System.out.println(durHours);
             startTime = LocalDateTime.of(year, month, day, hours, minutes);
             if (a.equals("TASK")) {
                 Task task = new Task(name, description, action, startTime, durHours, durMinutes);
+                System.out.println(task.getStartTime());
                 manager.createTask(task);
+
                 if (InMemoryTaskManager.getDataTasks().containsValue(task)) {
                     return 1;
                 } else {
@@ -232,8 +307,8 @@ public class HttpTaskServer {
             }
         }
 
-        private void getTaskById(HttpExchange exchange, int id) {
-            Task task = manager.getTask(1, id);
+        private void getAnyTaskById(HttpExchange exchange, int id, int condition) {
+            Task task = manager.getTask(condition, id);
             String line;
             if (task == null) {
                 line = "Неправильно введён ID!!!";
@@ -247,7 +322,6 @@ public class HttpTaskServer {
                 }).create();*/
                 line = task.toString();
             }
-
             try (OutputStream os = exchange.getResponseBody()) {
                 os.write(line.getBytes());
             } catch (IOException e) {
@@ -255,14 +329,13 @@ public class HttpTaskServer {
             }
         }
 
-        private void getEpicById(HttpExchange exchange, int id) {
-            Task task = manager.getTask(2, id);
+       /* private void getEpicById(HttpExchange exchange, int id) {
+            Task epic = manager.getTask(2, id);
             String line;
-            if (task == null) {
+            if (epic == null) {
                 line = "Неправильно введён ID!!!";
             } else {
-                Gson gson = new Gson();
-                line = gson.toJson(task);
+                line = epic.toString();
             }
 
             try (OutputStream os = exchange.getResponseBody()) {
@@ -273,13 +346,12 @@ public class HttpTaskServer {
         }
 
         private void getSubtaskById(HttpExchange exchange, int id) {
-            Task task = manager.getTask(3, id);
+            Task subtask = manager.getTask(3, id);
             String line;
-            if (task == null) {
+            if (subtask == null) {
                 line = "Неправильно введён ID!!!";
             } else {
-                Gson gson = new Gson();
-                line = gson.toJson(task);
+                line = subtask.toString();
             }
 
             try (OutputStream os = exchange.getResponseBody()) {
@@ -287,7 +359,7 @@ public class HttpTaskServer {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
+        }*/
 
         private boolean isCreateTask(String[] splitStrings, String method) {
             return splitStrings.length == 2 && method.equals("POST") &&
@@ -296,12 +368,12 @@ public class HttpTaskServer {
 
         private boolean isCreateSubtask(String[] splitStrings, String method) {
             return splitStrings.length == 2 && method.equals("POST") &&
-                    (splitStrings[1].equals("epic"));
+                    (splitStrings[1].equals("subtask"));
         }
 
         private boolean isCreateEpic(String[] splitStrings, String method) {
             return splitStrings.length == 2 && method.equals("POST") &&
-                    (splitStrings[1].equals("subtask"));
+                    (splitStrings[1].equals("epic"));
         }
 
         private boolean isGetTaskById(String[] splitStrings, String method) {
@@ -311,6 +383,21 @@ public class HttpTaskServer {
 
         private boolean isGetEpicById(String[] splitStrings, String method) {
             return splitStrings.length == 2 && method.equals("GET")
+                    && (splitStrings[1].equals("epic"));
+        }
+
+
+        private boolean isDeleteSubtaskById(String[] splitStrings, String method) {
+            return splitStrings.length == 2 && method.equals("DELETE")
+                    && (splitStrings[1].equals("subtask"));
+        }
+        private boolean isDeleteTaskById(String[] splitStrings, String method) {
+            return splitStrings.length == 2 && method.equals("DELETE")
+                    && (splitStrings[1].equals("task")); // check!!!
+        }
+
+        private boolean isDeleteEpicById(String[] splitStrings, String method) {
+            return splitStrings.length == 2 && method.equals("DELETE")
                     && (splitStrings[1].equals("epic"));
         }
 

@@ -155,10 +155,12 @@ public class FileBackedTasksManager extends InMemoryTaskManager {
                         id = Integer.parseInt(str[0]);
                         super.createEpic(new Epic(str[2], str[5], str[4]));
                         getDataEpics().get(id - 1).setStatus(str[3]);
-                        getDataTasks().get(id - 1).setStartTime(LocalDateTime.of(
-                                Integer.parseInt(startTime.nextToken()), Integer.parseInt(startTime.nextToken()),
-                                Integer.parseInt(startTime.nextToken()), Integer.parseInt(startTime.nextToken()),
-                                Integer.parseInt(startTime.nextToken())));
+                        if (!str[6].equals("null") && !str[7].equals("null")) {
+                            getDataEpics().get(id - 1).setStartTime(LocalDateTime.of(
+                                    Integer.parseInt(startTime.nextToken()), Integer.parseInt(startTime.nextToken()),
+                                    Integer.parseInt(startTime.nextToken()), Integer.parseInt(startTime.nextToken()),
+                                    Integer.parseInt(startTime.nextToken())));
+                        }
                         tasks.put(id - 1, getDataEpics().get(id - 1));
                     }
                     case "SUBTASK" -> {

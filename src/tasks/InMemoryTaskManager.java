@@ -27,6 +27,7 @@ public class InMemoryTaskManager implements TaskManager {
         dateTime = LocalDateTime.of(2023, Month.SEPTEMBER, 1, 0, 0);
         id = 0;
     }
+
     static {
         while (dateTime.isBefore(LocalDateTime.of(2024, Month.JANUARY, 1, 0, 0))) {
             intersections.put(dateTime, false);
@@ -245,6 +246,7 @@ public class InMemoryTaskManager implements TaskManager {
                     System.out.println("Нет задачи с таким идентивикатором!!!");
                     break;
                 }
+                checkIntersections(dataTasks.get(id), -1);
                 inMemoryHistoryManager.removeTask(id);
                 dataTasks.remove(id);
             }
@@ -255,10 +257,10 @@ public class InMemoryTaskManager implements TaskManager {
                 }
                 for (Subtask s : dataEpics.get(id).getSubtasks()
                 ) {
+                    checkIntersections(dataSubTasks.get(s.getId()), -1);
                     inMemoryHistoryManager.removeTask(s.getId());
                     dataSubTasks.remove(s.getId());
                 }
-                inMemoryHistoryManager.removeTask(id);
                 dataEpics.get(id).getSubtasks().clear();
                 dataEpics.remove(id);
             }
@@ -268,6 +270,7 @@ public class InMemoryTaskManager implements TaskManager {
                     break;
                 }
                 inMemoryHistoryManager.removeTask(id);
+                checkIntersections(dataSubTasks.get(id), -1);
                 dataSubTasks.get(id).getEpic().getSubtasks().remove(dataSubTasks.get(id));
                 dataSubTasks.remove(id);
             }
